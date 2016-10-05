@@ -1,6 +1,7 @@
 #include "AIShell.h"
+#include <stdlib.h>
 #include <iostream>
-
+using namespace std;
 
 AIShell::AIShell(int numCols, int numRows, bool gravityOn, int** gameState, Move lastMove)
 {
@@ -27,7 +28,6 @@ AIShell::~AIShell()
 Move AIShell::makeMove(){
 	//this part should be filled in by the student to implement the AI
 	//Example of a move could be: Move move(1, 2); //this will make a move at col 1, row 2
-	
 	bool move_made = false;
 	if (this->gravityOn) {
 		//if gravity is on, randomly select a column until an empty cell is found
