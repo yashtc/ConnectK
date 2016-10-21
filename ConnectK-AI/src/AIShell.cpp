@@ -54,10 +54,6 @@ Move AIShell::randomSearch() {
 		return m;
 }
 
-int AIShell::getMiniMaxUtility() {
-	return 0;
-}
-
 vector<Move> AIShell::getActions() {
 	vector<Move> possibleMoves;
 	for (int col = 0; col < numCols; col++) {
