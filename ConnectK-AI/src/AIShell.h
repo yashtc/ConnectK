@@ -17,6 +17,11 @@ public:
 	static const int HUMAN_PIECE = -1;
 	static const int NO_PIECE=0;
 
+	static const int NORTH = 0;
+	static const int NORTH_EAST = 1;
+	static const int EAST = 2;
+	static const int SOUTH_EAST = 3;
+
 
 private:
 	//Do not alter the values of numRows or numcols.
@@ -41,11 +46,20 @@ public:
 
 	Move randomSearch(); // Makes random move; makeMove calls this
 
+	//Minimax Utility Methods:
 	int miniMaxSearchMaxValue(int depth);
 
 	int miniMaxSearchMinValue(int depth);
 
 	int getMiniMaxUtility();
+
+	/**
+	 * Returns the utility of the cell.
+	 * if the cell has AI_PIECE it returns AIUtility
+	 * if the cell has HUMAN_UTILITY it returns Human Utility
+	 * if the cell is connected with either AIPiece or HumanPiece it returns INT_MAX
+	 */
+	int getUtilityOfACell(int col, int row);
 
 
 	Move makeMove();
