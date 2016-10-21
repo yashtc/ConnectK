@@ -2,7 +2,10 @@
 #define AISHELL_H
 
 #pragma once
+#include <vector>
 #include "Move.h"
+
+using namespace std;
 
 
 // A new AIShell will be created for every move request.
@@ -31,6 +34,20 @@ public:
 
 	AIShell(int numCols, int numRows, bool gravityOn, int** gameState, Move lastMove);
 	~AIShell();
+
+	Move miniMaxSearch(); // Use gameState class variable; makeMove calls this
+
+	vector<Move> getActions(); // Take gravityOn and state from class variables
+
+	Move randomSearch(); // Makes random move; makeMove calls this
+
+	int miniMaxSearchMaxValue(int depth);
+
+	int miniMaxSearchMinValue(int depth);
+
+	int getMiniMaxUtility();
+
+
 	Move makeMove();
 };
 
