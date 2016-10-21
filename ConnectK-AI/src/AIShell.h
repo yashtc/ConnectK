@@ -8,6 +8,11 @@
 using namespace std;
 
 
+struct Utility{
+	int AIUtility;
+	int humanUtility;
+};
+
 // A new AIShell will be created for every move request.
 class AIShell{
 
@@ -54,12 +59,13 @@ public:
 	int getMiniMaxUtility();
 
 	/**
-	 * Returns the utility of the cell.
-	 * if the cell has AI_PIECE it returns AIUtility
-	 * if the cell has HUMAN_UTILITY it returns Human Utility
+	 * Returns the utility(AIUtility, humanUtility) of the cell.
+	 * if the cell has AI_PIECE it returns positive AIUtility
+	 * if the cell has HUMAN_UTILITY it returns positive Human Utility
 	 * if the cell is connected with either AIPiece or HumanPiece it returns INT_MAX
+	 * if the cell has NO_PIECE,it returns positive humanUtility and positive AIUtility
 	 */
-	int getUtilityOfACell(int col, int row);
+	Utility getUtilityOfACell(int col, int row);
 
 
 	Move makeMove();

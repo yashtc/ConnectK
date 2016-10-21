@@ -144,14 +144,15 @@ Move AIShell::makeMove(){
 	 
 }
 
-int AIShell::getUtilityOfACell(int col, int row){
+Utility AIShell::getUtilityOfACell(int col, int row){
 	int currentPiece = gameState[col][row];
-	int ret = 0;
+	Utility utility = { 0, 0};
 	for(int direction = 0; direction < 4; direction++){
 		int r = row;
 		int c = col;
 		int count = 1;
 		bool connected = true;
+		int tempPiece = NO_PIECE;
 		while(count < k){
 			if(direction == NORTH){
 				r++;
@@ -165,24 +166,57 @@ int AIShell::getUtilityOfACell(int col, int row){
 				c++;
 			}
 			if(c < numCols && r < numRows && r >= 0){
-				if(gameState[c][r] == currentPiece && gameState[c][r] != NO_PIECE ){
-					count++;
-				}else if(gameState[c][r] == NO_PIECE ){
-					count++;
+				if(currentPiece == NO_PIECE){
 					connected = false;
+					if(gameState[c][r] == NO_PIECE || gameState[c][r] == tempPiece){
+						count++;
+					}else if(tempPiece == NO_PIECE){
+						//This will be run firstime when a AI_PIECE or HUMAN_PIECE is encountered.
+						//In this case we will ignore the aberration and just save it as a tempPiece.
+						tempPiece = gameState[c][r];
+						count++;
+					}else{
+						break;
+					}
+
 				}else{
-					break;
+					if(gameState[c][r] == currentPiece){
+						count++;
+					}else{
+						break;
+					}
+				}
+			}else{
+				//if we crossed the game board, break the loop in that direction.
+				break;
+			}
+		}
+		if(count == k){
+			if(currentPiece == AI_PIECE){
+				if(connected){
+					utility.AIUtility = INT_MAX;
+					return utility;
+				}
+				utility.AIUtility += 1;
+			}else if (currentPiece == HUMAN_PIECE){
+				if(connected){
+					utility.humanUtility = INT_MAX;
+					return utility;
+				}
+				utility.humanUtility += 1;
+			}else{//currentPiece == NO_PIECE
+				if(tempPiece == NO_PIECE){
+					utility.humanUtility += 1;
+					utility.AIUtility += 1;
+				}else if (tempPiece == HUMAN_PIECE){
+					utility.humanUtility += 1;
+				}else{//tempPiece == AI_PIECE
+					utility.AIUtility += 1;
 				}
 			}
 		}
-		if(count == k && connected){
-			return INT_MAX;
-		}
-		if(count == k){
-			ret ++;
-		}
 	}
-	return ret;
+	return utility;
 }
 
 int AIShell::getMiniMaxUtility(){
@@ -190,21 +224,15 @@ int AIShell::getMiniMaxUtility(){
 	int humanUtility = 0;
 	for(int row = 0; row < numRows; row++){
 		for(int col = 0; col < numCols; col ++){
-			int utility = getUtilityOfACell(col, row);
-			if(gameState[col][row] == AI_PIECE){
-				if(utility == INT_MAX){
-					return INT_MAX;
-				}
-				AIUtility += utility;
-			}else if (gameState[col][row] == HUMAN_PIECE){
-				if(utility == INT_MAX){
-					return INT_MIN;
-				}
-				humanUtility += utility;
-			}else{//gameState[col][row] == NO_PIECE
-				humanUtility += utility;
-				AIUtility += utility;
+			Utility utility = getUtilityOfACell(col, row);
+			if(utility.AIUtility == INT_MAX){
+				return INT_MAX;
 			}
+			if(utility.humanUtility == INT_MAX){
+				return INT_MIN;
+			}
+			AIUtility += utility.AIUtility;
+			humanUtility += utility.humanUtility;
 		}
 	}
 	return AIUtility - humanUtility;
