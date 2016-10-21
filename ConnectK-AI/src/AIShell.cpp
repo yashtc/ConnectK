@@ -79,12 +79,12 @@ int AIShell::miniMaxSearchMaxValue(int depth) {
 	int numPossibleMoves = possibleMoves.size();
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
-		gameState[oneMove.row][oneMove.col] = AI_PIECE;
+		gameState[oneMove.col][oneMove.row] = AI_PIECE;
 		int valueForMove = miniMaxSearchMinValue(depth - 1);
 		if (valueForMove > maxValue) {
 			maxValue = valueForMove;
 		}
-		gameState[oneMove.row][oneMove.col] = NO_PIECE;
+		gameState[oneMove.col][oneMove.row] = NO_PIECE;
 	}
 	return maxValue;
 }
@@ -98,12 +98,12 @@ int AIShell::miniMaxSearchMinValue(int depth) {
 	int numPossibleMoves = possibleMoves.size();
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
-		gameState[oneMove.row][oneMove.col] = HUMAN_PIECE;
+		gameState[oneMove.col][oneMove.row] = HUMAN_PIECE;
 		int valueForMove = miniMaxSearchMaxValue(depth - 1);
 		if (valueForMove < minValue) {
 			minValue = valueForMove;
 		}
-		gameState[oneMove.row][oneMove.col] = NO_PIECE;
+		gameState[oneMove.col][oneMove.row] = NO_PIECE;
 	}
 	return minValue;
 }
@@ -125,14 +125,14 @@ Move AIShell::miniMaxSearch() {
 	int numPossibleMoves = possibleMoves.size();
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
-		gameState[oneMove.row][oneMove.col] = AI_PIECE;
+		gameState[oneMove.col][oneMove.row] = AI_PIECE;
 		int valueForMove = miniMaxSearchMinValue(maxDepth);
 		if (valueForMove > maxValue) {
 			maxValue = valueForMove;
 			maxMove.col = oneMove.col;
 			maxMove.row = oneMove.row;
 		}
-		gameState[oneMove.row][oneMove.col] = NO_PIECE;
+		gameState[oneMove.col][oneMove.row] = NO_PIECE;
 	}
 	return maxMove;
 }
@@ -140,7 +140,7 @@ Move AIShell::miniMaxSearch() {
 Move AIShell::makeMove(){
 	//this part should be filled in by the student to implement the AI
 	//Example of a move could be: Move move(1, 2); //this will make a move at col 1, row 2
-	return randomSearch();
+	return miniMaxSearch();
 	 
 }
 
@@ -165,7 +165,7 @@ int AIShell::getUtilityOfACell(int col, int row){
 				c++;
 			}
 			if(c < numCols && r < numRows && r >= 0){
-				if(gameState[c][r] == currentPiece){
+				if(gameState[c][r] == currentPiece && gameState[c][r] != NO_PIECE ){
 					count++;
 				}else if(gameState[c][r] == NO_PIECE ){
 					count++;
