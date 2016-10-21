@@ -53,6 +53,10 @@ Move AIShell::randomSearch() {
 		return m;
 }
 
+int AIShell::getMiniMaxUtility() {
+	return 0;
+}
+
 vector<Move> AIShell::getActions() {
 	vector<Move> possibleMoves;
 	for (int col = 0; col < numCols; col++) {
@@ -75,7 +79,9 @@ int AIShell::miniMaxSearchMaxValue(int depth) {
 	}
 	int maxValue = INT_MIN;
 	vector<Move> possibleMoves = getActions();
-	for (Move oneMove : possibleMoves) {
+	int numPossibleMoves = possibleMoves.size();
+	for (int i = 0; i < numPossibleMoves; i++) {
+		Move oneMove = possibleMoves[i];
 		gameState[oneMove.row][oneMove.col] = AI_PIECE;
 		int valueForMove = miniMaxSearchMinValue(depth - 1);
 		if (valueForMove > maxValue) {
@@ -92,7 +98,9 @@ int AIShell::miniMaxSearchMinValue(int depth) {
 	}
 	int minValue = INT_MAX;
 	vector<Move> possibleMoves = getActions();
-	for (Move oneMove : possibleMoves) {
+	int numPossibleMoves = possibleMoves.size();
+	for (int i = 0; i < numPossibleMoves; i++) {
+		Move oneMove = possibleMoves[i];
 		gameState[oneMove.row][oneMove.col] = HUMAN_PIECE;
 		int valueForMove = miniMaxSearchMaxValue(depth - 1);
 		if (valueForMove < minValue) {
@@ -117,7 +125,9 @@ Move AIShell::miniMaxSearch() {
 	vector<Move> possibleMoves = getActions();
 	Move maxMove;
 	int maxValue = INT_MIN;
-	for (Move oneMove : possibleMoves) {
+	int numPossibleMoves = possibleMoves.size();
+	for (int i = 0; i < numPossibleMoves; i++) {
+		Move oneMove = possibleMoves[i];
 		gameState[oneMove.row][oneMove.col] = AI_PIECE;
 		int valueForMove = miniMaxSearchMinValue(maxDepth);
 		if (valueForMove > maxValue) {
