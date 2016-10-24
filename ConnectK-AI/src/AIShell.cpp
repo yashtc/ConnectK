@@ -70,9 +70,9 @@ vector<Move> AIShell::getActions() {
 	return possibleMoves;
 }
 
-int AIShell::miniMaxSearchMaxValue(int depth, Move m) {
+int AIShell::miniMaxSearchMaxValue(int depth) {
 	if (depth <= 0) {
-		return getMiniMaxUtility(m);
+		return getMiniMaxUtility();
 	}
 	int maxValue = INT_MIN;
 	vector<Move> possibleMoves = getActions();
@@ -80,18 +80,24 @@ int AIShell::miniMaxSearchMaxValue(int depth, Move m) {
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
 		gameState[oneMove.col][oneMove.row] = AI_PIECE;
-		int valueForMove = miniMaxSearchMinValue(depth - 1, oneMove);
+		if (miniMaxIsTerminalState(oneMove)) {
+			maxValue = INT_MAX;
+			gameState[oneMove.col][oneMove.row] = NO_PIECE;
+			break;
+		}
+		int valueForMove = miniMaxSearchMinValue(depth - 1);
 		if (valueForMove > maxValue) {
 			maxValue = valueForMove;
 		}
 		gameState[oneMove.col][oneMove.row] = NO_PIECE;
+		if (maxValue == INT_MAX) break;
 	}
 	return maxValue;
 }
 
-int AIShell::miniMaxSearchMinValue(int depth, Move m) {
+int AIShell::miniMaxSearchMinValue(int depth) {
 	if (depth <= 0) {
-		return getMiniMaxUtility(m);
+		return getMiniMaxUtility();
 	}
 	int minValue = INT_MAX;
 	vector<Move> possibleMoves = getActions();
@@ -99,11 +105,17 @@ int AIShell::miniMaxSearchMinValue(int depth, Move m) {
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
 		gameState[oneMove.col][oneMove.row] = HUMAN_PIECE;
-		int valueForMove = miniMaxSearchMaxValue(depth - 1, oneMove);
+		if (miniMaxIsTerminalState(oneMove)) {
+			minValue = INT_MIN;
+			gameState[oneMove.col][oneMove.row] = NO_PIECE;
+			break;
+		}
+		int valueForMove = miniMaxSearchMaxValue(depth - 1);
 		if (valueForMove < minValue) {
 			minValue = valueForMove;
 		}
 		gameState[oneMove.col][oneMove.row] = NO_PIECE;
+		if (minValue == INT_MIN) break;
 	}
 	return minValue;
 }
@@ -126,13 +138,20 @@ Move AIShell::miniMaxSearch() {
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
 		gameState[oneMove.col][oneMove.row] = AI_PIECE;
-		int valueForMove = miniMaxSearchMinValue(maxDepth - 1, oneMove);
+		if (miniMaxIsTerminalState(oneMove)) {
+			maxMove.col = oneMove.col;
+			maxMove.row = oneMove.row;
+			gameState[oneMove.col][oneMove.row] = NO_PIECE;
+			break;
+		}
+		int valueForMove = miniMaxSearchMinValue(maxDepth - 1);
 		if (valueForMove > maxValue) {
 			maxValue = valueForMove;
 			maxMove.col = oneMove.col;
 			maxMove.row = oneMove.row;
 		}
 		gameState[oneMove.col][oneMove.row] = NO_PIECE;
+		if (maxValue == INT_MAX) break;
 	}
 	return maxMove;
 }
@@ -239,8 +258,8 @@ int AIShell::getMiniMaxNorthEastUtility() {
 				}
 			}
 			if (i == k) {
-				if (aiPossible) AIscore += 1 + int(0.1 * extraAI + 0.5);
-				if (humanPossible) humanScore += 1 + int(0.1 * extraHuman + 0.5);
+				if (aiPossible) AIscore += 1;// + int(0.1 * extraAI + 0.5);
+				if (humanPossible) humanScore += 1;// + int(0.1 * extraHuman + 0.5);
 			}
 		}
 	}
@@ -267,8 +286,8 @@ int AIShell::getMiniMaxSouthEastUtility() {
 				}
 			}
 			if (i == k) {
-				if (aiPossible) AIscore += 1 + int(0.1 * extraAI + 0.5);
-				if (humanPossible) humanScore += 1 + int(0.1 * extraHuman + 0.5);
+				if (aiPossible) AIscore += 1;// + int(0.1 * extraAI + 0.5);
+				if (humanPossible) humanScore += 1;// + int(0.1 * extraHuman + 0.5);
 			}
 		}
 	}
@@ -290,7 +309,7 @@ int AIShell::getMiniMaxVerticalUtility() {
 				}
 			}
 			if (i == k) {
-				AIscore += 1 + int(0.1 * extraAI + 0.5);
+				AIscore += 1;// + int(0.1 * extraAI + 0.5);
 			} else {
 				row = row + i;
 			}
@@ -307,7 +326,7 @@ int AIShell::getMiniMaxVerticalUtility() {
 				}
 			}
 			if (i == k) {
-				humanScore += 1 + int(0.1 * extraHuman + 0.5);
+				humanScore += 1;// + int(0.1 * extraHuman + 0.5);
 			} else {
 				row = row + i;
 			}
@@ -331,7 +350,7 @@ int AIShell::getMiniMaxHorizontalUtility() {
 				}
 			}
 			if (i == k) {
-				AIscore += 1 + int(0.1 * extraAI + 0.5);
+				AIscore += 1;// + int(0.1 * extraAI + 0.5);
 			} else {
 				col = col + i;
 			}
@@ -347,7 +366,7 @@ int AIShell::getMiniMaxHorizontalUtility() {
 				}
 			}
 			if (i == k) {
-				humanScore += 1 + int(0.1 * extraHuman + 0.5);
+				humanScore += 1;// + int(0.1 * extraHuman + 0.5);
 			} else {
 				col = col + i;
 			}
@@ -405,10 +424,7 @@ bool AIShell::miniMaxIsTerminalState(Move m) {
 	return false;
 }
 
-int AIShell::getMiniMaxUtility(Move m) {
-	if (miniMaxIsTerminalState(m)) {
-		return gameState[m.col][m.row] == AI_PIECE ? INT_MAX : INT_MIN;
-	}
+int AIShell::getMiniMaxUtility() {
 	return getMiniMaxHorizontalUtility() + getMiniMaxVerticalUtility() + getMiniMaxSouthEastUtility() + getMiniMaxNorthEastUtility();
 	int AIUtility = 0;
 	int humanUtility = 0;

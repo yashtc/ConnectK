@@ -52,11 +52,11 @@ public:
 	Move randomSearch(); // Makes random move; makeMove calls this
 
 	//Minimax Utility Methods:
-	int miniMaxSearchMaxValue(int depth, Move m);
+	int miniMaxSearchMaxValue(int depth);
 
-	int miniMaxSearchMinValue(int depth, Move m);
+	int miniMaxSearchMinValue(int depth);
 
-	int getMiniMaxUtility(Move m);
+	int getMiniMaxUtility();
 
 	int getMiniMaxHorizontalUtility();
 
