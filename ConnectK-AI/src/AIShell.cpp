@@ -120,7 +120,7 @@ Move AIShell::miniMaxSearch() {
 	// return maxMove
 	int maxDepth = gravityOn ? 5 : 3;
 	vector<Move> possibleMoves = getActions();
-	Move maxMove;
+	Move maxMove = possibleMoves[0];
 	int maxValue = INT_MIN;
 	int numPossibleMoves = possibleMoves.size();
 	for (int i = 0; i < numPossibleMoves; i++) {
