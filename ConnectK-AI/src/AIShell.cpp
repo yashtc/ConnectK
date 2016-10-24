@@ -70,9 +70,9 @@ vector<Move> AIShell::getActions() {
 	return possibleMoves;
 }
 
-int AIShell::miniMaxSearchMaxValue(int depth) {
+int AIShell::miniMaxSearchMaxValue(int depth, Move m) {
 	if (depth <= 0) {
-		return getMiniMaxUtility();
+		return getMiniMaxUtility(m);
 	}
 	int maxValue = INT_MIN;
 	vector<Move> possibleMoves = getActions();
@@ -80,7 +80,7 @@ int AIShell::miniMaxSearchMaxValue(int depth) {
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
 		gameState[oneMove.col][oneMove.row] = AI_PIECE;
-		int valueForMove = miniMaxSearchMinValue(depth - 1);
+		int valueForMove = miniMaxSearchMinValue(depth - 1, oneMove);
 		if (valueForMove > maxValue) {
 			maxValue = valueForMove;
 		}
@@ -89,9 +89,9 @@ int AIShell::miniMaxSearchMaxValue(int depth) {
 	return maxValue;
 }
 
-int AIShell::miniMaxSearchMinValue(int depth) {
+int AIShell::miniMaxSearchMinValue(int depth, Move m) {
 	if (depth <= 0) {
-		return getMiniMaxUtility();
+		return getMiniMaxUtility(m);
 	}
 	int minValue = INT_MAX;
 	vector<Move> possibleMoves = getActions();
@@ -99,7 +99,7 @@ int AIShell::miniMaxSearchMinValue(int depth) {
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
 		gameState[oneMove.col][oneMove.row] = HUMAN_PIECE;
-		int valueForMove = miniMaxSearchMaxValue(depth - 1);
+		int valueForMove = miniMaxSearchMaxValue(depth - 1, oneMove);
 		if (valueForMove < minValue) {
 			minValue = valueForMove;
 		}
@@ -118,7 +118,7 @@ Move AIShell::miniMaxSearch() {
 	//      maxMove = m
 	//   revert the move m from the state
 	// return maxMove
-	int maxDepth = 4;
+	int maxDepth = gravityOn ? 5 : 3;
 	vector<Move> possibleMoves = getActions();
 	Move maxMove;
 	int maxValue = INT_MIN;
@@ -126,7 +126,7 @@ Move AIShell::miniMaxSearch() {
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
 		gameState[oneMove.col][oneMove.row] = AI_PIECE;
-		int valueForMove = miniMaxSearchMinValue(maxDepth);
+		int valueForMove = miniMaxSearchMinValue(maxDepth - 1, oneMove);
 		if (valueForMove > maxValue) {
 			maxValue = valueForMove;
 			maxMove.col = oneMove.col;
@@ -219,7 +219,197 @@ Utility AIShell::getUtilityOfACell(int col, int row){
 	return utility;
 }
 
-int AIShell::getMiniMaxUtility(){
+int AIShell::getMiniMaxNorthEastUtility() {
+	int AIscore = 0, humanScore = 0;
+	for (int col = 0; col <= numCols - k; col++) {
+		for (int row = 0; row <= numRows - k; row++) {
+			int i = 0;
+			bool aiPossible = true, humanPossible = true;
+			int extraHuman = 0, extraAI = 0;
+			for (; i < k; i++) {
+				if (gameState[col + i][row + i] == HUMAN_PIECE) {
+					extraHuman++;
+					aiPossible = false;
+				} else if (gameState[col + i][row + i] == AI_PIECE) {
+					extraAI++;
+					humanPossible = false;
+				}
+				if (!aiPossible && !humanPossible) {
+					break;
+				}
+			}
+			if (i == k) {
+				if (aiPossible) AIscore += 1 + int(0.1 * extraAI + 0.5);
+				if (humanPossible) humanScore += 1 + int(0.1 * extraHuman + 0.5);
+			}
+		}
+	}
+	return AIscore - humanScore;
+}
+
+int AIShell::getMiniMaxSouthEastUtility() {
+	int AIscore = 0, humanScore = 0;
+	for (int col = 0; col <= numCols - k; col++) {
+		for (int row = k - 1; row < numRows; row++) {
+			int i = 0;
+			bool aiPossible = true, humanPossible = true;
+			int extraHuman = 0, extraAI = 0;
+			for (; i < k; i++) {
+				if (gameState[col + i][row - i] == HUMAN_PIECE) {
+					extraHuman++;
+					aiPossible = false;
+				} else if (gameState[col + i][row - i] == AI_PIECE) {
+					extraAI++;
+					humanPossible = false;
+				}
+				if (!aiPossible && !humanPossible) {
+					break;
+				}
+			}
+			if (i == k) {
+				if (aiPossible) AIscore += 1 + int(0.1 * extraAI + 0.5);
+				if (humanPossible) humanScore += 1 + int(0.1 * extraHuman + 0.5);
+			}
+		}
+	}
+	return AIscore - humanScore;
+}
+
+int AIShell::getMiniMaxVerticalUtility() {
+	int AIscore = 0, humanScore = 0;
+	for (int col = 0; col < numCols; col++) {
+		for (int row = 0; row <= numRows - k; row++) {
+			int i = 0;
+			int extraAI = 0;
+			for (; i < k; i++) {
+				if (gameState[col][row + i] == HUMAN_PIECE) {
+					break;
+				}
+				if (gameState[col][row + i] == AI_PIECE) {
+					extraAI++;
+				}
+			}
+			if (i == k) {
+				AIscore += 1 + int(0.1 * extraAI + 0.5);
+			} else {
+				row = row + i;
+			}
+		}
+		for (int row = 0; row <= numRows - k; row++) {
+			int i = 0;
+			int extraHuman = 0;
+			for (; i < k; i++) {
+				if (gameState[col][row + i] == AI_PIECE) {
+					break;
+				}
+				if (gameState[col][row + i] == HUMAN_PIECE) {
+					extraHuman++;
+				}
+			}
+			if (i == k) {
+				humanScore += 1 + int(0.1 * extraHuman + 0.5);
+			} else {
+				row = row + i;
+			}
+		}
+	}
+	return AIscore - humanScore;
+}
+
+int AIShell::getMiniMaxHorizontalUtility() {
+	int AIscore = 0, humanScore = 0, extraAI = 0, extraHuman = 0;
+	for (int row = 0; row < numRows; row++) {
+		for (int col = 0; col <= numCols - k; col++) {
+			int i = 0;
+			int extraAI = 0;
+			for (; i < k; i++) {
+				if (gameState[col + i][row] == HUMAN_PIECE) {
+					break;
+				}
+				if (gameState[col][row + i] == AI_PIECE) {
+					extraAI++;
+				}
+			}
+			if (i == k) {
+				AIscore += 1 + int(0.1 * extraAI + 0.5);
+			} else {
+				col = col + i;
+			}
+		}
+		for (int col = 0; col <= numCols - k; col++) {
+			int i = 0;
+			for (; i < k; i++) {
+				if (gameState[col + i][row] == AI_PIECE) {
+					break;
+				}
+				if (gameState[col][row + i] == HUMAN_PIECE) {
+					extraHuman++;
+				}
+			}
+			if (i == k) {
+				humanScore += 1 + int(0.1 * extraHuman + 0.5);
+			} else {
+				col = col + i;
+			}
+		}
+	}
+	return AIscore - humanScore;
+}
+
+bool AIShell::miniMaxIsTerminalState(Move m) {
+	int player = gameState[m.col][m.row];
+	// check horizontal
+	int count = 0, i = m.col, j = m.row;
+	while (count < k && i >= 0 && gameState[i--][m.row] == player) {
+		count++;
+	}
+	i = m.col + 1;
+	while (count < k && i < numCols && gameState[i++][m.row] == player) {
+		count++;
+	}
+	if (count == k) return true;
+
+	// check vertical
+	count = 0, i = m.col, j = m.row;
+	while (count < k && i >= 0 && gameState[m.col][j--] == player) {
+		count++;
+	}
+	j = m.row + 1;
+	while (count < k && j < numRows && gameState[m.col][j++] == player) {
+		count++;
+	}
+	if (count == k) return true;
+
+	// check SW/NE diagonal
+	count = 0, i = m.col, j = m.row;
+	while (count < k && i >= 0 && j >= 0 && gameState[i--][j--] == player) {
+		count++;
+	}
+	i = m.col + 1; j = m.row + 1;
+	while (count < k && i < numCols && j < numRows && gameState[i++][j++] == player) {
+		count++;
+	}
+	if (count == k) return true;
+
+	// check SE/NW diagonal
+	count = 0, i = m.col, j = m.row;
+	while (count < k && i < numCols && j >= 0 && gameState[i++][j--] == player) {
+		count++;
+	}
+	i = m.col - 1; j = m.row + 1;
+	while (count < k && i >= 0 && j < numRows && gameState[i--][j++] == player) {
+		count++;
+	}
+	if (count == k) return true;
+
+	return false;
+}
+
+int AIShell::getMiniMaxUtility(Move m) {
+	if (miniMaxIsTerminalState(m)) {
+		return gameState[m.col][m.row] == AI_PIECE ? INT_MAX : INT_MIN;
+	}
+	return getMiniMaxHorizontalUtility() + getMiniMaxVerticalUtility() + getMiniMaxSouthEastUtility() + getMiniMaxNorthEastUtility();
 	int AIUtility = 0;
 	int humanUtility = 0;
 	for(int row = 0; row < numRows; row++){

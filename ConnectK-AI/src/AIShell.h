@@ -52,11 +52,21 @@ public:
 	Move randomSearch(); // Makes random move; makeMove calls this
 
 	//Minimax Utility Methods:
-	int miniMaxSearchMaxValue(int depth);
+	int miniMaxSearchMaxValue(int depth, Move m);
 
-	int miniMaxSearchMinValue(int depth);
+	int miniMaxSearchMinValue(int depth, Move m);
 
-	int getMiniMaxUtility();
+	int getMiniMaxUtility(Move m);
+
+	int getMiniMaxHorizontalUtility();
+
+	int getMiniMaxVerticalUtility();
+
+	int getMiniMaxSouthEastUtility();
+
+	int getMiniMaxNorthEastUtility();
+
+	bool miniMaxIsTerminalState(Move m);
 
 	/**
 	 * Returns the utility(AIUtility, humanUtility) of the cell.
