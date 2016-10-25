@@ -156,11 +156,87 @@ Move AIShell::miniMaxSearch() {
 	return maxMove;
 }
 
+int AIShell::alphaBetaSearchMaxValue(int depth, int alpha, int beta) {
+	if (depth <= 0) {
+		return getMiniMaxUtility();
+	}
+	vector<Move> possibleMoves = getActions();
+	int numPossibleMoves = possibleMoves.size();
+	for (int i = 0; i < numPossibleMoves; i++) {
+		Move oneMove = possibleMoves[i];
+		gameState[oneMove.col][oneMove.row] = HUMAN_PIECE;
+		if (miniMaxIsTerminalState(oneMove)) {
+			beta = INT_MIN;
+			gameState[oneMove.col][oneMove.row] = NO_PIECE;
+			break;
+		}
+		int alphaForMove = alphaBetaSearchMinValue(depth - 1, alpha, beta);
+		if (alphaForMove > alpha) {
+			alpha = alphaForMove;
+		}
+		gameState[oneMove.col][oneMove.row] = NO_PIECE;
+		if (alpha >= beta) return INT_MAX;
+		if (alpha == INT_MAX) break;
+	}
+	return alpha;
+}
+
+int AIShell::alphaBetaSearchMinValue(int depth, int alpha, int beta) {
+	if (depth <= 0) {
+		return getMiniMaxUtility();
+	}
+	vector<Move> possibleMoves = getActions();
+	int numPossibleMoves = possibleMoves.size();
+	for (int i = 0; i < numPossibleMoves; i++) {
+		Move oneMove = possibleMoves[i];
+		gameState[oneMove.col][oneMove.row] = HUMAN_PIECE;
+		if (miniMaxIsTerminalState(oneMove)) {
+			beta = INT_MIN;
+			gameState[oneMove.col][oneMove.row] = NO_PIECE;
+			break;
+		}
+		int betaForMove = alphaBetaSearchMaxValue(depth - 1, alpha, beta);
+		if (betaForMove < beta) {
+			beta = betaForMove;
+		}
+		gameState[oneMove.col][oneMove.row] = NO_PIECE;
+		if (alpha >= beta) return INT_MIN;
+		if (beta == INT_MIN) break;
+	}
+	return beta;
+}
+
+Move AIShell::alphaBetaSearch() {
+	int alpha = INT_MIN, beta = INT_MAX;
+	int maxDepth = gravityOn ? 5 : 4;
+	vector<Move> possibleMoves = getActions();
+	Move maxMove = possibleMoves[0];
+	int numPossibleMoves = possibleMoves.size();
+	for (int i = 0; i < numPossibleMoves; i++) {
+		Move oneMove = possibleMoves[i];
+		gameState[oneMove.col][oneMove.row] = AI_PIECE;
+		if (miniMaxIsTerminalState(oneMove)) {
+			maxMove.col = oneMove.col;
+			maxMove.row = oneMove.row;
+			gameState[oneMove.col][oneMove.row] = NO_PIECE;
+			break;
+		}
+		int alphaForMove = alphaBetaSearchMinValue(maxDepth - 1, alpha, beta);
+		if (alphaForMove > alpha) {
+			alpha = alphaForMove;
+			maxMove.col = oneMove.col;
+			maxMove.row = oneMove.row;
+		}
+		gameState[oneMove.col][oneMove.row] = NO_PIECE;
+		if (alpha == INT_MAX) break;
+	}
+	return maxMove;
+}
+
 Move AIShell::makeMove(){
 	//this part should be filled in by the student to implement the AI
 	//Example of a move could be: Move move(1, 2); //this will make a move at col 1, row 2
-	return miniMaxSearch();
-	 
+	return alphaBetaSearch();
 }
 
 Utility AIShell::getUtilityOfACell(int col, int row){

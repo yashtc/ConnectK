@@ -77,6 +77,12 @@ public:
 	 */
 	Utility getUtilityOfACell(int col, int row);
 
+	int alphaBetaSearchMaxValue(int depth, int alpha, int beta);
+
+	int alphaBetaSearchMinValue(int depth, int alpha, int beta);
+
+	Move alphaBetaSearch();
+
 
 	Move makeMove();
 };
