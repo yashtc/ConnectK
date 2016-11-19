@@ -37,6 +37,7 @@ private:
 	bool gravityOn; //this will be true if gravity is turned on. It will be false if gravity is turned off.
 	Move lastMove; //this is the move made last by your opponent. If your opponent has not made a move yet (you move first) then this move will hold the value (-1, -1) instead.
 
+	static int lastSuccessfulDepthForIDS;
 
 public:
 	int deadline; //this is how many milliseconds the AI has to make move.
@@ -81,7 +82,9 @@ public:
 
 	int alphaBetaSearchMinValue(int depth, int alpha, int beta);
 
-	Move alphaBetaSearch();
+	Move alphaBetaSearch(int maxDepth);
+
+	Move IDSearch();
 
 
 	Move makeMove();

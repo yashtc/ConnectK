@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <iostream>
 #include <climits>
+#include <sys/time.h>
 using namespace std;
+
+int AIShell::lastSuccessfulDepthForIDS = 3;
 
 AIShell::AIShell(int numCols, int numRows, bool gravityOn, int** gameState, Move lastMove)
 {
@@ -206,9 +209,8 @@ int AIShell::alphaBetaSearchMinValue(int depth, int alpha, int beta) {
 	return beta;
 }
 
-Move AIShell::alphaBetaSearch() {
+Move AIShell::alphaBetaSearch(int maxDepth) {
 	int alpha = INT_MIN, beta = INT_MAX;
-	int maxDepth = gravityOn ? 5 : 4;
 	vector<Move> possibleMoves = getActions();
 	Move maxMove = possibleMoves[0];
 	int numPossibleMoves = possibleMoves.size();
@@ -236,7 +238,35 @@ Move AIShell::alphaBetaSearch() {
 Move AIShell::makeMove(){
 	//this part should be filled in by the student to implement the AI
 	//Example of a move could be: Move move(1, 2); //this will make a move at col 1, row 2
-	return alphaBetaSearch();
+	//lastSuccessfulDepthForIDS = gravityOn ? 4 : 3;
+	return IDSearch();
+}
+
+Move AIShell::IDSearch() {
+	Move m;
+	bool deadlinePassed = false;
+
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+	long int originalTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+
+	int depthToTry = lastSuccessfulDepthForIDS;
+	do {
+		Move currentMove = alphaBetaSearch(depthToTry);
+		gettimeofday(&tp, NULL);
+		long int currentTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+		int timeElapsed = currentTime - originalTime;
+
+		if (timeElapsed > deadline) {
+			deadlinePassed = true;
+		} else {
+			m.col = currentMove.col;
+			m.row = currentMove.row;
+			AIShell::lastSuccessfulDepthForIDS = depthToTry;
+			depthToTry++;
+		}
+	} while (!deadlinePassed);
+	return m;
 }
 
 Utility AIShell::getUtilityOfACell(int col, int row){
