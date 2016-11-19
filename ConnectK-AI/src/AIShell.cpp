@@ -165,11 +165,14 @@ int AIShell::alphaBetaSearchMaxValue(int depth, int alpha, int beta) {
 	}
 	vector<Move> possibleMoves = getActions();
 	int numPossibleMoves = possibleMoves.size();
+	if (numPossibleMoves == 0) {
+		return 0;
+	}
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
-		gameState[oneMove.col][oneMove.row] = HUMAN_PIECE;
+		gameState[oneMove.col][oneMove.row] = AI_PIECE;
 		if (miniMaxIsTerminalState(oneMove)) {
-			beta = INT_MIN;
+			alpha = INT_MAX;
 			gameState[oneMove.col][oneMove.row] = NO_PIECE;
 			break;
 		}
@@ -190,6 +193,9 @@ int AIShell::alphaBetaSearchMinValue(int depth, int alpha, int beta) {
 	}
 	vector<Move> possibleMoves = getActions();
 	int numPossibleMoves = possibleMoves.size();
+	if (numPossibleMoves == 0) {
+		return 0;
+	}
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
 		gameState[oneMove.col][oneMove.row] = HUMAN_PIECE;
@@ -209,7 +215,7 @@ int AIShell::alphaBetaSearchMinValue(int depth, int alpha, int beta) {
 	return beta;
 }
 
-Move AIShell::alphaBetaSearch(int maxDepth) {
+Move AIShell::alphaBetaSearch(int maxDepth, long int originalTime) {
 	int alpha = INT_MIN, beta = INT_MAX;
 	vector<Move> possibleMoves = getActions();
 	Move maxMove = possibleMoves[0];
@@ -224,6 +230,12 @@ Move AIShell::alphaBetaSearch(int maxDepth) {
 			break;
 		}
 		int alphaForMove = alphaBetaSearchMinValue(maxDepth - 1, alpha, beta);
+		struct timeval tp;
+		gettimeofday(&tp, NULL);
+		long int currentTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+		if (currentTime - originalTime >= deadline) {
+			return Move(-1, -1);
+		}
 		if (alphaForMove > alpha) {
 			alpha = alphaForMove;
 			maxMove.col = oneMove.col;
@@ -238,7 +250,6 @@ Move AIShell::alphaBetaSearch(int maxDepth) {
 Move AIShell::makeMove(){
 	//this part should be filled in by the student to implement the AI
 	//Example of a move could be: Move move(1, 2); //this will make a move at col 1, row 2
-	//lastSuccessfulDepthForIDS = gravityOn ? 4 : 3;
 	return IDSearch();
 }
 
@@ -252,7 +263,10 @@ Move AIShell::IDSearch() {
 
 	int depthToTry = lastSuccessfulDepthForIDS;
 	do {
-		Move currentMove = alphaBetaSearch(depthToTry);
+		Move currentMove = alphaBetaSearch(depthToTry, originalTime);
+		if (currentMove.row == -1) {
+			return lastSuccessfulMoveInIDS;
+		}
 		gettimeofday(&tp, NULL);
 		long int currentTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 		int timeElapsed = currentTime - originalTime;
@@ -263,6 +277,8 @@ Move AIShell::IDSearch() {
 			m.col = currentMove.col;
 			m.row = currentMove.row;
 			AIShell::lastSuccessfulDepthForIDS = depthToTry;
+			lastSuccessfulMoveInIDS.col = m.col;
+			lastSuccessfulMoveInIDS.row = m.row;
 			depthToTry++;
 		}
 	} while (!deadlinePassed);

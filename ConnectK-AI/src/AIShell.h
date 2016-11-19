@@ -38,6 +38,7 @@ private:
 	Move lastMove; //this is the move made last by your opponent. If your opponent has not made a move yet (you move first) then this move will hold the value (-1, -1) instead.
 
 	static int lastSuccessfulDepthForIDS;
+	Move lastSuccessfulMoveInIDS;
 
 public:
 	int deadline; //this is how many milliseconds the AI has to make move.
@@ -82,7 +83,7 @@ public:
 
 	int alphaBetaSearchMinValue(int depth, int alpha, int beta);
 
-	Move alphaBetaSearch(int maxDepth);
+	Move alphaBetaSearch(int maxDepth, long int originalTime);
 
 	Move IDSearch();
 
