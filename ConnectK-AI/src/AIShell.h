@@ -79,9 +79,9 @@ public:
 	 */
 	Utility getUtilityOfACell(int col, int row);
 
-	int alphaBetaSearchMaxValue(int depth, int alpha, int beta);
+	int alphaBetaSearchMaxValue(int depth, int alpha, int beta, long int originalTime, bool *valid);
 
-	int alphaBetaSearchMinValue(int depth, int alpha, int beta);
+	int alphaBetaSearchMinValue(int depth, int alpha, int beta, long int originalTime, bool *valid);
 
 	Move alphaBetaSearch(int maxDepth, long int originalTime);
 

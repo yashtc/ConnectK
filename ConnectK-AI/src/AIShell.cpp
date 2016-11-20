@@ -159,7 +159,7 @@ Move AIShell::miniMaxSearch() {
 	return maxMove;
 }
 
-int AIShell::alphaBetaSearchMaxValue(int depth, int alpha, int beta) {
+int AIShell::alphaBetaSearchMaxValue(int depth, int alpha, int beta, long int originalTime, bool *valid) {
 	if (depth <= 0) {
 		return getMiniMaxUtility();
 	}
@@ -176,7 +176,17 @@ int AIShell::alphaBetaSearchMaxValue(int depth, int alpha, int beta) {
 			gameState[oneMove.col][oneMove.row] = NO_PIECE;
 			break;
 		}
-		int alphaForMove = alphaBetaSearchMinValue(depth - 1, alpha, beta);
+		int alphaForMove = alphaBetaSearchMinValue(depth - 1, alpha, beta, originalTime, valid);
+		if (*valid == false) {
+			return INT_MIN;
+		}
+		struct timeval tp;
+		gettimeofday(&tp, NULL);
+		long int currentTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+		if (currentTime - originalTime >= deadline) {
+			*valid = false;
+			return INT_MIN;
+		}
 		if (alphaForMove > alpha) {
 			alpha = alphaForMove;
 		}
@@ -187,7 +197,7 @@ int AIShell::alphaBetaSearchMaxValue(int depth, int alpha, int beta) {
 	return alpha;
 }
 
-int AIShell::alphaBetaSearchMinValue(int depth, int alpha, int beta) {
+int AIShell::alphaBetaSearchMinValue(int depth, int alpha, int beta, long int originalTime, bool *valid) {
 	if (depth <= 0) {
 		return getMiniMaxUtility();
 	}
@@ -204,7 +214,17 @@ int AIShell::alphaBetaSearchMinValue(int depth, int alpha, int beta) {
 			gameState[oneMove.col][oneMove.row] = NO_PIECE;
 			break;
 		}
-		int betaForMove = alphaBetaSearchMaxValue(depth - 1, alpha, beta);
+		int betaForMove = alphaBetaSearchMaxValue(depth - 1, alpha, beta, originalTime, valid);
+		if (*valid == false) {
+			return INT_MAX;
+		}
+		struct timeval tp;
+		gettimeofday(&tp, NULL);
+		long int currentTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+		if (currentTime - originalTime >= deadline) {
+			*valid = false;
+			return INT_MAX;
+		}
 		if (betaForMove < beta) {
 			beta = betaForMove;
 		}
@@ -220,6 +240,7 @@ Move AIShell::alphaBetaSearch(int maxDepth, long int originalTime) {
 	vector<Move> possibleMoves = getActions();
 	Move maxMove = possibleMoves[0];
 	int numPossibleMoves = possibleMoves.size();
+	bool valid = true;
 	for (int i = 0; i < numPossibleMoves; i++) {
 		Move oneMove = possibleMoves[i];
 		gameState[oneMove.col][oneMove.row] = AI_PIECE;
@@ -229,7 +250,11 @@ Move AIShell::alphaBetaSearch(int maxDepth, long int originalTime) {
 			gameState[oneMove.col][oneMove.row] = NO_PIECE;
 			break;
 		}
-		int alphaForMove = alphaBetaSearchMinValue(maxDepth - 1, alpha, beta);
+		int alphaForMove = alphaBetaSearchMinValue(maxDepth - 1, alpha, beta, originalTime, &valid);
+		if (!valid) {
+			Move noMove(-1, -1);
+			return noMove;
+		}
 		struct timeval tp;
 		gettimeofday(&tp, NULL);
 		long int currentTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
@@ -256,12 +281,13 @@ Move AIShell::makeMove(){
 Move AIShell::IDSearch() {
 	Move m;
 	bool deadlinePassed = false;
+	deadline = deadline - 500;
 
 	struct timeval tp;
 	gettimeofday(&tp, NULL);
 	long int originalTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 
-	int depthToTry = lastSuccessfulDepthForIDS;
+	int depthToTry = lastSuccessfulDepthForIDS - 1;
 	do {
 		Move currentMove = alphaBetaSearch(depthToTry, originalTime);
 		if (currentMove.row == -1) {
