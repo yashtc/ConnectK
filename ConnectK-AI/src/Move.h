@@ -9,6 +9,7 @@ public:
 	int col; //the col to move to.
 	Move();
 	Move(int col, int row);
+	int utility;
 };
 
 #endif //MOVE_H

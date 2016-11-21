@@ -4,6 +4,8 @@
 #pragma once
 #include <vector>
 #include "Move.h"
+#include <map>
+#include <set>
 
 using namespace std;
 
@@ -11,6 +13,18 @@ using namespace std;
 struct Utility{
 	int AIUtility;
 	int humanUtility;
+};
+
+struct CMin{
+	bool operator()(const Move &a, const Move &b) const{
+		return a.utility <= b.utility;
+	}
+};
+
+struct CMax{
+	bool operator()(const Move &a, const Move &b) const{
+		return a.utility > b.utility;
+	}
 };
 
 // A new AIShell will be created for every move request.
@@ -79,11 +93,13 @@ public:
 	 */
 	Utility getUtilityOfACell(int col, int row);
 
-	int alphaBetaSearchMaxValue(int depth, int alpha, int beta, long int originalTime, bool *valid);
+	int alphaBetaSearchMaxValue(int depth, int currentDepth, int alpha, int beta,
+			long int originalTime, bool *valid, map<int, vector<Move> > depthVsMoves);
 
-	int alphaBetaSearchMinValue(int depth, int alpha, int beta, long int originalTime, bool *valid);
+	int alphaBetaSearchMinValue(int depth, int currentDepth, int alpha, int beta,
+			long int originalTime, bool *valid, map<int, vector<Move> > depthVsMoves);
 
-	Move alphaBetaSearch(int maxDepth, long int originalTime);
+	Move alphaBetaSearch(int maxDepth, long int originalTime, map<int, vector<Move> > depthVsMoves);
 
 	Move IDSearch();
 
