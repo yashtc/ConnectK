@@ -23,7 +23,7 @@ struct CMin{
 
 struct CMax{
 	bool operator()(const Move &a, const Move &b) const{
-		return a.utility > b.utility;
+		return a.utility >= b.utility;
 	}
 };
 
@@ -94,12 +94,12 @@ public:
 	Utility getUtilityOfACell(int col, int row);
 
 	int alphaBetaSearchMaxValue(int depth, int currentDepth, int alpha, int beta,
-			long int originalTime, bool *valid, map<int, vector<Move> > depthVsMoves);
+			long int originalTime, bool *valid, map<int, vector<Move> > &depthVsMoves);
 
 	int alphaBetaSearchMinValue(int depth, int currentDepth, int alpha, int beta,
-			long int originalTime, bool *valid, map<int, vector<Move> > depthVsMoves);
+			long int originalTime, bool *valid, map<int, vector<Move> > &depthVsMoves);
 
-	Move alphaBetaSearch(int maxDepth, long int originalTime, map<int, vector<Move> > depthVsMoves);
+	Move alphaBetaSearch(int maxDepth, long int originalTime, map<int, vector<Move> > &depthVsMoves);
 
 	Move IDSearch();
 

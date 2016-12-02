@@ -30,12 +30,12 @@ AIShell::~AIShell()
 }
 
 
-void addToMapMin(map<int, vector<Move> > depthVsMoves, set<Move, CMin> orderedMoves, int depth){
+void addToMapMin(map<int, vector<Move> > &depthVsMoves, set<Move, CMin> &orderedMoves, int depth){
 	vector<Move> v(orderedMoves.begin(), orderedMoves.end());
 	depthVsMoves[depth] = v;
 }
 
-void addToMapMax(map<int, vector<Move> > depthVsMoves, set<Move, CMax> orderedMoves, int depth){
+void addToMapMax(map<int, vector<Move> > &depthVsMoves, set<Move, CMax> &orderedMoves, int depth){
 	vector<Move> v(orderedMoves.begin(), orderedMoves.end());
 	depthVsMoves[depth] = v;
 }
@@ -171,7 +171,7 @@ Move AIShell::miniMaxSearch() {
 }
 
 int AIShell::alphaBetaSearchMaxValue(int depth, int currentDepth, int alpha, int beta,
-		long int originalTime, bool *valid, map<int, vector<Move> > depthVsMoves) {
+		long int originalTime, bool *valid, map<int, vector<Move> > &depthVsMoves) {
 	if (depth <= 0) {
 		return getMiniMaxUtility();
 	}
@@ -222,7 +222,7 @@ int AIShell::alphaBetaSearchMaxValue(int depth, int currentDepth, int alpha, int
 }
 
 int AIShell::alphaBetaSearchMinValue(int depth, int currentDepth, int alpha, int beta,
-		long int originalTime, bool *valid, map<int, vector<Move> > depthVsMoves) {
+		long int originalTime, bool *valid, map<int, vector<Move> > &depthVsMoves) {
 
 	if (depth <= 0) {
 		return getMiniMaxUtility();
@@ -276,7 +276,7 @@ int AIShell::alphaBetaSearchMinValue(int depth, int currentDepth, int alpha, int
 	return beta;
 }
 
-Move AIShell::alphaBetaSearch(int maxDepth, long int originalTime, map<int, vector<Move> > depthVsMoves) {
+Move AIShell::alphaBetaSearch(int maxDepth, long int originalTime, map<int, vector<Move> > &depthVsMoves) {
 	int alpha = INT_MIN, beta = INT_MAX;
 	vector<Move> possibleMoves;
 	if(depthVsMoves.find(1) != depthVsMoves.end()){
