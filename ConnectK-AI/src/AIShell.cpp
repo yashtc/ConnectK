@@ -350,14 +350,14 @@ Move AIShell::IDSearch() {
 		if (timeElapsed > deadline) {
 			deadlinePassed = true;
 			//we should write a break statement here instead of setting the parameter to true
-		} else {
-			m.col = currentMove.col;
-			m.row = currentMove.row;
-			AIShell::lastSuccessfulDepthForIDS = depthToTry;
-			lastSuccessfulMoveInIDS.col = m.col;
-			lastSuccessfulMoveInIDS.row = m.row;
-			depthToTry++;
 		}
+		m.col = currentMove.col;
+		m.row = currentMove.row;
+		AIShell::lastSuccessfulDepthForIDS = depthToTry;
+		lastSuccessfulMoveInIDS.col = m.col;
+		lastSuccessfulMoveInIDS.row = m.row;
+		depthToTry++;
+
 	} while (!deadlinePassed);
 	return m;
 }
