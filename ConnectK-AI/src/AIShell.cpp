@@ -5,7 +5,7 @@
 #include <sys/time.h>
 using namespace std;
 
-int AIShell::lastSuccessfulDepthForIDS = 3;
+int AIShell::lastSuccessfulDepthForIDS = 2;
 
 AIShell::AIShell(int numCols, int numRows, bool gravityOn, int** gameState, Move lastMove)
 {
@@ -30,14 +30,14 @@ AIShell::~AIShell()
 }
 
 
-void addToMapMin(map<int, vector<Move> > &depthVsMoves, set<Move, CMin> &orderedMoves, int depth){
+void addToMapMin(map<string, vector<Move> > &depthVsMoves, set<Move, CMin> &orderedMoves, string gameStateStr){
 	vector<Move> v(orderedMoves.begin(), orderedMoves.end());
-	depthVsMoves[depth] = v;
+	depthVsMoves[gameStateStr] = v;
 }
 
-void addToMapMax(map<int, vector<Move> > &depthVsMoves, set<Move, CMax> &orderedMoves, int depth){
+void addToMapMax(map<string, vector<Move> > &depthVsMoves, set<Move, CMax> &orderedMoves, string gameStateStr){
 	vector<Move> v(orderedMoves.begin(), orderedMoves.end());
-	depthVsMoves[depth] = v;
+	depthVsMoves[gameStateStr] = v;
 }
 
 Move AIShell::randomSearch() {
@@ -171,13 +171,14 @@ Move AIShell::miniMaxSearch() {
 }
 
 int AIShell::alphaBetaSearchMaxValue(int depth, int currentDepth, int alpha, int beta,
-		long int originalTime, bool *valid, map<int, vector<Move> > &depthVsMoves) {
+		long int originalTime, bool *valid, map<string, vector<Move> > &depthVsMoves) {
 	if (depth <= 0) {
 		return getMiniMaxUtility();
 	}
 	vector<Move> possibleMoves;
-	if(depthVsMoves.find(currentDepth + 1) != depthVsMoves.end()){
-		possibleMoves = depthVsMoves[currentDepth + 1];
+	string currentGameStateStr = getGameStateStr();
+	if(depthVsMoves.find(currentGameStateStr) != depthVsMoves.end()){
+		possibleMoves = depthVsMoves[currentGameStateStr];
 	}else{
 		possibleMoves = getActions();
 	}
@@ -207,30 +208,31 @@ int AIShell::alphaBetaSearchMaxValue(int depth, int currentDepth, int alpha, int
 			*valid = false;
 			return INT_MIN;
 		}
+		cout << "Min tried move " << oneMove.col << " " << oneMove.row << " :" << alphaForMove << "\n";
 		if (alphaForMove > alpha) {
 			alpha = alphaForMove;
 		}
 		gameState[oneMove.col][oneMove.row] = NO_PIECE;
 		if (alpha >= beta) {
-			addToMapMax(depthVsMoves, orderedMoves, currentDepth + 1);
+			//addToMapMax(depthVsMoves, orderedMoves, currentGameStateStr);
 			return INT_MAX;
 		}
 		if (alpha == INT_MAX) break;
 	}
-	addToMapMax(depthVsMoves, orderedMoves, currentDepth + 1);
+	//addToMapMax(depthVsMoves, orderedMoves, currentGameStateStr);
 	return alpha;
 }
 
 int AIShell::alphaBetaSearchMinValue(int depth, int currentDepth, int alpha, int beta,
-		long int originalTime, bool *valid, map<int, vector<Move> > &depthVsMoves) {
+		long int originalTime, bool *valid, map<string, vector<Move> > &depthVsMoves) {
 
 	if (depth <= 0) {
 		return getMiniMaxUtility();
 	}
 	vector<Move> possibleMoves;
-
-	if(depthVsMoves.find(currentDepth + 1) != depthVsMoves.end()){
-		possibleMoves = depthVsMoves[currentDepth + 1];
+	string currentGameStateStr = getGameStateStr();
+	if(depthVsMoves.find(currentGameStateStr) != depthVsMoves.end()){
+		possibleMoves = depthVsMoves[currentGameStateStr];
 	}else{
 		possibleMoves = getActions();
 	}
@@ -255,6 +257,8 @@ int AIShell::alphaBetaSearchMinValue(int depth, int currentDepth, int alpha, int
 		oneMove.utility = betaForMove;
 		orderedMoves.insert(oneMove);
 
+		cout << "Min tried move " << oneMove.col << " " << oneMove.row << " :" << betaForMove << "\n";
+
 		struct timeval tp;
 		gettimeofday(&tp, NULL);
 		long int currentTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
@@ -267,22 +271,35 @@ int AIShell::alphaBetaSearchMinValue(int depth, int currentDepth, int alpha, int
 		}
 		gameState[oneMove.col][oneMove.row] = NO_PIECE;
 		if (alpha >= beta) {
-			addToMapMin(depthVsMoves, orderedMoves, currentDepth + 1);
+			//addToMapMin(depthVsMoves, orderedMoves, currentGameStateStr);
 			return INT_MIN;
 		}
 		if (beta == INT_MIN) break;
 	}
-	addToMapMin(depthVsMoves, orderedMoves, currentDepth + 1);
+	//addToMapMin(depthVsMoves, orderedMoves, currentGameStateStr);
 	return beta;
 }
 
-Move AIShell::alphaBetaSearch(int maxDepth, long int originalTime, map<int, vector<Move> > &depthVsMoves) {
+string AIShell::getGameStateStr() {
+	string gameStateStr = "";
+	for (int i = 0; i < numCols; i++) {
+		for (int j = 0; j < numRows; j++) {
+			gameStateStr += gameState[i][j] == HUMAN_PIECE ? '0' : (gameState[i][j] == AI_PIECE ? 'X' : ' ');
+		}
+	}
+	return gameStateStr;
+}
+
+Move AIShell::alphaBetaSearch(int maxDepth, long int originalTime, map<string, vector<Move> > &depthVsMoves) {
 	int alpha = INT_MIN, beta = INT_MAX;
 	vector<Move> possibleMoves;
-	if(depthVsMoves.find(1) != depthVsMoves.end()){
-		possibleMoves = depthVsMoves[1];
+	string currentGameStateStr = getGameStateStr();
+	if(depthVsMoves.find(currentGameStateStr) != depthVsMoves.end()){
+		possibleMoves = depthVsMoves[currentGameStateStr];
+		cout << "Found " << possibleMoves.size() << " moves for depth 1\n";
 	}else{
 		possibleMoves = getActions();
+		cout << "Created " << possibleMoves.size() << " moves for depth 1\n";
 	}
 	Move maxMove = possibleMoves[0];
 	int numPossibleMoves = possibleMoves.size();
@@ -302,6 +319,7 @@ Move AIShell::alphaBetaSearch(int maxDepth, long int originalTime, map<int, vect
 			Move noMove(-1, -1);
 			return noMove;
 		}
+		cout << "Tried move " << oneMove.col << " " << oneMove.row << " :" << alphaForMove << "\n";
 		oneMove.utility = alphaForMove;
 		orderedMoves.insert(oneMove);
 		struct timeval tp;
@@ -318,7 +336,7 @@ Move AIShell::alphaBetaSearch(int maxDepth, long int originalTime, map<int, vect
 		gameState[oneMove.col][oneMove.row] = NO_PIECE;
 		if (alpha == INT_MAX) break;
 	}
-	addToMapMax(depthVsMoves, orderedMoves, 1);
+	//addToMapMax(depthVsMoves, orderedMoves, currentGameStateStr);
 	return maxMove;
 }
 
@@ -336,11 +354,13 @@ Move AIShell::IDSearch() {
 	struct timeval tp;
 	gettimeofday(&tp, NULL);
 	long int originalTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
-	map<int, vector<Move> > depthVsMoves;
+	map<string, vector<Move> > depthVsMoves;
 	int depthToTry = lastSuccessfulDepthForIDS - 1;
 	do {
+		cout << "Trying depth: " << depthToTry << "\n";
 		Move currentMove = alphaBetaSearch(depthToTry, originalTime, depthVsMoves);
 		if (currentMove.row == -1) {
+			cout << "Returning from error state\n";
 			return lastSuccessfulMoveInIDS;
 		}
 		gettimeofday(&tp, NULL);
@@ -358,7 +378,7 @@ Move AIShell::IDSearch() {
 			lastSuccessfulMoveInIDS.row = m.row;
 			depthToTry++;
 		}
-	} while (!deadlinePassed);
+	} while (!deadlinePassed && depthToTry <= 4);
 	return m;
 }
 
