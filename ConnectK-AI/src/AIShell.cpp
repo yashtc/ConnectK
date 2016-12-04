@@ -371,18 +371,13 @@ Move AIShell::IDSearch() {
 			deadlinePassed = true;
 			//we should write a break statement here instead of setting the parameter to true
 		}
-<<<<<<< HEAD
 		m.col = currentMove.col;
 		m.row = currentMove.row;
 		AIShell::lastSuccessfulDepthForIDS = depthToTry;
 		lastSuccessfulMoveInIDS.col = m.col;
 		lastSuccessfulMoveInIDS.row = m.row;
 		depthToTry++;
-
-	} while (!deadlinePassed);
-=======
 	} while (!deadlinePassed && depthToTry <= 4);
->>>>>>> branch 'master' of https://github.com/yashtc/ConnectK
 	return m;
 }
 
